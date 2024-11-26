@@ -1,0 +1,41 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\C#\\tarea9\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\tarea9.bundle.scp.css",
+      "PackagePath": "staticwebassets\\tarea9.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\C#\\tarea9\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\C#\\tarea9\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\C#\\tarea9\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\C#\\tarea9\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.tarea9.props",
+      "PackagePath": "build\\tarea9.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.tarea9.props",
+      "PackagePath": "buildMultiTargeting\\tarea9.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.tarea9.props",
+      "PackagePath": "buildTransitive\\tarea9.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.tarea9.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

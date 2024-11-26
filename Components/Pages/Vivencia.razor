@@ -1,0 +1,137 @@
+@page "/vivencias"
+@inject NavigationManager Nav
+@inject AppDbContext _context
+@inject IJSRuntime JS
+
+
+<h3>Mis Vivencias en Videojuegos</h3>
+
+<EditForm Model="@nuevaVivencia" OnValidSubmit="AgregarVivencia">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="titulo">Título</label>
+        <InputText id="titulo" class="form-control" @bind-Value="nuevaVivencia.Titulo" />
+    </div>
+
+    <div class="form-group">
+        <label for="descripcion">Descripción</label>
+        <InputTextArea id="descripcion" class="form-control" @bind-Value="nuevaVivencia.Descripcion" />
+    </div>
+
+    <div class="form-group">
+        <label for="fecha">Fecha</label>
+        <InputDate id="fecha" class="form-control" @bind-Value="nuevaVivencia.Fecha" />
+    </div>
+
+    <div class="form-group">
+        <label for="imagen">Imagen</label>
+        <InputFile OnChange="CargarImagen" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Agregar Vivencia</button>
+</EditForm>
+
+<hr />
+
+<h4>Mis Vivencias</h4>
+
+@if (vivencias.Any())
+{
+    <div class="card-deck">
+        @foreach (var vivencia in vivencias)
+        {
+            <div class="card">
+                <img src="@vivencia.Imagen" class="card-img-top" alt="Imagen de la vivencia" />
+                <div class="card-body">
+                    <h5 class="card-title">@vivencia.Titulo</h5>
+                    <p class="card-text">@vivencia.Descripcion</p>
+                    <p class="card-text"><small class="text-muted">@vivencia.Fecha.ToString("dd/MM/yyyy")</small></p>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No tienes vivencias registradas.</p>
+}
+
+<hr />
+
+<h4>Botón de Pánico</h4>
+<p>Elimina todas tus vivencias. Requiere contraseña para confirmar.</p>
+
+<EditForm OnValidSubmit="EliminarVivencias">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="clave">Ingresa tu clave para confirmar</label>
+        <InputText id="clave" class="form-control" @bind-Value="claveConfirmacion" />
+    </div>
+
+    <button type="submit" class="btn btn-danger">Eliminar todas las vivencias</button>
+</EditForm>
+
+@code {
+    private List<Vivencia> vivencias = new();
+    private Vivencia nuevaVivencia = new();
+    private string claveConfirmacion;
+
+    // Cargar vivencias del usuario actual al iniciar
+    protected override async Task OnInitializedAsync()
+    {
+        var usuarioActual = await ObtenerUsuarioActual();
+        vivencias = await _context.Vivencias
+            .Where(v => v.UsuarioId == usuarioActual.Id)
+            .ToListAsync();
+    }
+
+    private async Task AgregarVivencia()
+    {
+        var usuarioActual = await ObtenerUsuarioActual();
+        nuevaVivencia.UsuarioId = usuarioActual.Id;
+
+        _context.Vivencias.Add(nuevaVivencia);
+        await _context.SaveChangesAsync();
+
+        vivencias.Add(nuevaVivencia);
+        nuevaVivencia = new Vivencia();
+    }
+
+    private async Task CargarImagen(InputFileChangeEventArgs e)
+    {
+        var imagen = e.File;
+        if (imagen != null)
+        {
+            using var stream = new MemoryStream();
+            await imagen.OpenReadStream().CopyToAsync(stream);
+            nuevaVivencia.Imagen = $"data:{imagen.ContentType};base64,{Convert.ToBase64String(stream.ToArray())}";
+        }
+    }
+
+    private async Task EliminarVivencias()
+    {
+        var usuarioActual = await ObtenerUsuarioActual();
+
+        if (usuarioActual.Clave == claveConfirmacion)
+        {
+            _context.Vivencias.RemoveRange(_context.Vivencias.Where(v => v.UsuarioId == usuarioActual.Id));
+            await _context.SaveChangesAsync();
+
+            vivencias.Clear();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Clave incorrecta.");
+        }
+    }
+
+    private async Task<Usuario> ObtenerUsuarioActual()
+    {
+        // Lógica para obtener el usuario actualmente autenticado
+        return await _context.Usuarios.FirstOrDefaultAsync(); // Simulación, ajustar según el sistema de login
+    }
+}

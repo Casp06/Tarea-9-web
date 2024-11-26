@@ -1,0 +1,42 @@
+﻿@page "/panico"
+@inject NavigationManager Nav
+@using Microsoft.EntityFrameworkCore
+
+<h3>Eliminar Todas Mis Vivencias</h3>
+
+<InputText @bind-Value="claveConfirmacion" placeholder="Confirma tu clave" />
+<button @onclick="ConfirmarEliminacion">Eliminar Todo</button>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@code {
+    private string claveConfirmacion;
+    private string errorMessage;
+
+    private async Task ConfirmarEliminacion()
+    {
+        var usuario = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.Clave == claveConfirmacion);
+
+        if (usuario != null)
+        {
+            var vivenciasDelUsuario = _context.Vivencias.Where(v => v.UsuarioId == usuario.Id);
+            _context.Vivencias.RemoveRange(vivenciasDelUsuario);
+            await _context.SaveChangesAsync();
+            errorMessage = "Tus vivencias han sido eliminadas.";
+        }
+        else
+        {
+            errorMessage = "Clave incorrecta.";
+        }
+    }
+
+    [Inject]
+    private AppDbContext _context { get; set; }
+}
+

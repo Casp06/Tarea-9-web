@@ -1,0 +1,81 @@
+﻿@page "/"
+@page "/login"
+@inject NavigationManager Nav
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+
+<PageTitle>Iniciar Sesión</PageTitle>
+
+<h3>Iniciar Sesión</h3>
+
+<EditForm Model="@loginData" OnValidSubmit="IniciarSesion" FormName="login">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="nombreUsuario">Usuario</label>
+        <InputText id="nombreUsuario" class="form-control" @bind-Value="loginData.NombreUsuario" />
+    </div>
+
+    <div class="form-group">
+        <label for="clave">Clave</label>
+        <InputText id="clave" type="password" class="form-control" @bind-Value="loginData.Clave" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+</EditForm>
+
+<p class="text-danger">@errorMessage</p>
+
+<p>
+    ¿No tienes cuenta? <a href="/registro">Crear Cuenta</a>
+</p>
+
+@code {
+    private LoginModel loginData = new LoginModel();
+    private string errorMessage;
+
+    private async Task IniciarSesion()
+    {
+        try
+        {
+            // Verifica que los datos no estén vacíos
+            if (string.IsNullOrWhiteSpace(loginData.NombreUsuario) || string.IsNullOrWhiteSpace(loginData.Clave))
+            {
+                errorMessage = "Por favor, completa todos los campos.";
+                return;
+            }
+
+            // Busca al usuario en la base de datos
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.NombreUsuario == loginData.NombreUsuario);
+
+            if (usuario == null)
+            {
+                errorMessage = "Nombre de usuario incorrecto.";
+            }
+            else if (usuario.Clave != loginData.Clave)
+            {
+                errorMessage = "Contraseña incorrecta.";
+            }
+            else
+            {
+                // Si el usuario y clave son correctos, redirige
+                Nav.NavigateTo("/vivencias");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Ocurrió un error: " + ex.Message;
+        }
+    }
+
+    [Inject]
+    private AppDbContext _context { get; set; }
+
+    public class LoginModel
+    {
+        public string NombreUsuario { get; set; }
+        public string Clave { get; set; }
+    }
+}

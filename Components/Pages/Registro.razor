@@ -1,0 +1,84 @@
+﻿@page "/registro"
+@inject NavigationManager Nav
+@using Microsoft.EntityFrameworkCore
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<h3>Crear Cuenta</h3>
+
+<EditForm Model="@nuevoUsuario" OnValidSubmit="Registrar" FormName="Registrar">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <!-- Mensaje de error si el usuario ya existe -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+    <div class="form-group">
+        <label for="nombreUsuario">Usuario</label>
+        <InputText id="nombreUsuario" class="form-control" @bind-Value="nuevoUsuario.NombreUsuario"/>
+    </div>
+
+    <div class="form-group">
+        <label for="correo">Correo</label>
+        <InputText id="correo" class="form-control" @bind-Value="nuevoUsuario.Correo" />
+    </div>
+
+    <div class="form-group">
+        <label for="clave">Clave</label>
+        <InputText id="clave" class="form-control" @bind-Value="nuevoUsuario.Clave" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Registrar</button>
+</EditForm>
+
+<p>
+    ¿Ya tienes cuenta? <a href="/login">Iniciar sesión</a>
+</p>
+
+@code {
+    private Usuario nuevoUsuario = new Usuario();
+    private string errorMessage;
+
+    private async Task Registrar()
+    {
+        Console.WriteLine("Registrar está siendo ejecutado");
+        
+        await JS.InvokeVoidAsync("alert", "Formulario enviado");
+
+        // Validar que los campos no estén vacíos
+        if (string.IsNullOrWhiteSpace(nuevoUsuario.NombreUsuario) || 
+            string.IsNullOrWhiteSpace(nuevoUsuario.Correo) || 
+            string.IsNullOrWhiteSpace(nuevoUsuario.Clave))
+        {
+            errorMessage = "Por favor, completa todos los campos.";
+            return;
+        }
+
+            
+
+        // Verificar si ya existe un usuario con el mismo nombre o correo
+        var usuarioExistente = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.NombreUsuario == nuevoUsuario.NombreUsuario || u.Correo == nuevoUsuario.Correo);
+
+        if (usuarioExistente != null)
+        {
+            errorMessage = "El usuario o correo ya está registrado.";
+        }
+        else
+        {
+            // Crear el nuevo usuario
+            _context.Usuarios.Add(nuevoUsuario);
+            await _context.SaveChangesAsync();
+            Nav.NavigateTo("/login"); // Redirigir a la página de login
+        }
+    }
+
+    // Inyectar AppDbContext para la consulta y registro de usuarios
+    [Inject]
+    private AppDbContext _context { get; set; }
+}
